@@ -7,13 +7,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float acceleration;
     [SerializeField] float maxSpeed;
     [SerializeField] float friction;
-    [SerializeField] float jumpStrenght;
     [SerializeField] float maxJump;
-    [SerializeField] float maxJumpForce;
-    [SerializeField] float jumpForceMultiplier;
-    float jumpStartedTime;
-    //bool hasAppliedContinuosJumpForce = false;
-    float limitSpeedY = 3;
+    //bool hasAppliedContinuosJumpForce;
 
     [SerializeField] float gravedadPredeterminada;
     [SerializeField] float gravityUp;
@@ -27,7 +22,7 @@ public class PlayerMovement : MonoBehaviour
 
 
     Rigidbody2D rb;
-    //Animator animator;
+    Animator animator;
     SpriteRenderer sp;
 
     bool lookRight = true;
@@ -51,8 +46,6 @@ public class PlayerMovement : MonoBehaviour
         MovementProcess();
         JumpProcess();
 
-        //El tiempo al que debo llegar para que deje de saltar
-        
     }
 
     void MovementProcess()
@@ -88,10 +81,11 @@ public class PlayerMovement : MonoBehaviour
             rb.velocity = new Vector2(Mathf.Sign(rb.velocity.x) * maxSpeed, rb.velocity.y);
         }
 
-        AnimacionVolteo(movement);
+        //AnimacionVolteo(movement);
 
     }
 
+    /*
     void AnimacionVolteo(Vector2 movement)
     {
         if ((lookRight == true && movement.x < 0) || (lookRight == false && movement.x > 0))
@@ -102,7 +96,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
     }
-
+    */
 
     bool EstaEnSuelo()
     {
@@ -146,6 +140,9 @@ public class PlayerMovement : MonoBehaviour
 
     void JumpProcess()
     {
+        float jumpStartedTime = 0;
+
+
         if (EstaEnSuelo())
         {
             remainingJumps = maxJump;
@@ -168,9 +165,10 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetKey(KeyCode.Space) && remainingJumps > 0)
         {
-            float jumpDuration = Time.time - jumpStartedTime;
-            float continuosJumpForce = Mathf.Min(jumpDuration * jumpForceMultiplier, maxJumpForce);
+            //float maxJumpPressTime = 0.2f;
+            float jumpForce = 1;
 
+            /*
             if (rb.velocity.y > 0)
             {
                 rb.gravityScale = gravityUp;
@@ -182,17 +180,15 @@ public class PlayerMovement : MonoBehaviour
                 print("ha bajado la gravedad: " + rb.gravityScale);
 
             }
+            */
 
-            rb.AddForce(Vector2.up * continuosJumpForce);
-            print("Jump Force: " + continuosJumpForce);
+            //rb.velocity.y(Vector2.up * JumpForce);
 
-            //Limitar velocidad vertical
-            if (rb.velocity.y > limitSpeedY)
-            {
-                rb.velocity = new Vector2(rb.velocity.x, limitSpeedY);
-            }
+            //Limitar salto cuando presiona el espacio
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
 
-            //hasAppliedContinuosJumpForce = true;
+            print("Jump Force: " + jumpForce);
+
         }
         else
         {
