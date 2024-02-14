@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,10 +12,12 @@ public class Squash : MonoBehaviour
     [SerializeField, Range(0, 1f)] private float animationDuration = 0.25f;
     [SerializeField] bool canBeOverwritten;
     [SerializeField] bool playOnStart;
+    [SerializeField] bool playsEveryTime = true;
+    [SerializeField, Range(0, 100f)] private float chanceToPlay = 100f;
 
 
 
-
+    [Flags]
     public enum SquashStretchAxis
     {
         None = 0,
@@ -23,19 +26,16 @@ public class Squash : MonoBehaviour
         Z = 4
     }
 
-    [Header("Animation Setiings")]
+    [Header("Animation Settings")]
     [SerializeField] float initialScale = 1f;
     [SerializeField] float maximumScale = 1.3f;
     [SerializeField] bool resetToInitialScaleAfterAnimation = true;
+    [SerializeField] bool reverseAnimationCurveAfterPlaying;
+    bool _isReserved;
 
-    /*
     [SerializeField]
-    AnimationCurve squashAndStretchCurve = new AnimationCurve(
-            params keys:new Keyframe(time:0f, value:0f),
-            new Keyframe(time:0.25f, value:1f),
-            new Keyframe(time:1f, value:0f)
-        );
-    */
+    AnimationCurve squashAndStretchCurve;
+    
 
     [Header("Looping Settings")]
     [SerializeField] bool looping;
@@ -61,6 +61,24 @@ public class Squash : MonoBehaviour
         _loopingDelayWaitForSeconds = new WaitForSeconds(loopingDelay);
     }
 
+    // Start is called before the first frame update
+    void Start()
+    {
+        if (playOnStart)
+            CheckForAndStartCoroutine();
+    }
+
+    /*
+   [PropertySpace(25), Button]
+   [ContextMenu(itemName:"Play Squash and Stretch")]
+    */
+    public void PlaySquashAndStretch()
+    {
+        if (looping && !canBeOverwritten)
+            return;
+
+        CheckForAndStartCoroutine();
+    }
 
     void CheckForAndStartCoroutine()
     {
@@ -69,18 +87,98 @@ public class Squash : MonoBehaviour
             Debug.Log(message: "Axis to affect is set to None.", gameObject);
             return;
         }
+
+        if (_squashAndStretchCoroutine != null)
+        {
+            StopCoroutine(_squashAndStretchCoroutine);
+            if (playsEveryTime && resetToInitialScaleAfterAnimation)
+                transform.localScale = _initialScaleVector;
+        }
+
+        _squashAndStretchCoroutine = StartCoroutine(routine:SquashAndStrechEffect());
     }
 
-    // Start is called before the first frame update
-    void Start()
+    private IEnumerator SquashAndStrechEffect()
     {
-        
+        do
+        {
+            if (!playsEveryTime)
+            {
+                float random = UnityEngine.Random.Range(0, 100f);
+                if (random > chanceToPlay)
+                {
+                    yield return null;
+                    continue;
+                }
+            }
+
+
+            if (reverseAnimationCurveAfterPlaying)
+                _isReserved = !_isReserved;
+
+            float elapsedTime = 0;
+            Vector3 originalScale = _initialScaleVector;
+            Vector3 modifiedScale = originalScale;
+
+            while (elapsedTime < animationDuration)
+            {
+                elapsedTime += Time.deltaTime;
+
+                float curvePosition;
+
+                if (_isReserved)
+                    curvePosition = 1 - (elapsedTime / animationDuration);
+                else
+                    curvePosition = elapsedTime / animationDuration;
+
+                float curveValue = squashAndStretchCurve.Evaluate(curvePosition);
+                float remappedValue = initialScale + (curveValue * (maximumScale - initialScale));
+
+                float minimumThreshold = 0.0001f;
+                if (Mathf.Abs(remappedValue) < minimumThreshold)
+                    remappedValue = minimumThreshold;
+
+
+                if (affectX)
+                    modifiedScale.x = originalScale.x * remappedValue;
+                else
+                    modifiedScale.x = originalScale.x / remappedValue;
+
+                if (affectY)
+                    modifiedScale.y = originalScale.y * remappedValue;
+                else
+                    modifiedScale.y = originalScale.y / remappedValue;
+
+                if (affectZ)
+                    modifiedScale.z = originalScale.z * remappedValue;
+                else
+                    modifiedScale.z = originalScale.z / remappedValue;
+
+                transformToAffect.localScale = modifiedScale;
+
+                yield return new WaitForEndOfFrame();
+            }
+
+            if (resetToInitialScaleAfterAnimation)
+                transformToAffect.localScale = originalScale;
+
+            if (looping)
+            {
+                yield return _loopingDelayWaitForSeconds;
+            }
+
+        } while (looping);
+    }
+
+    public void SetLooping(bool shouldLoop)
+    {
+        looping = shouldLoop;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+       
     }
 }
 
