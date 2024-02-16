@@ -10,6 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b02e8c32547d474498d14d807488623, type: 3}
-  m_Name: SampleStats
+  m_Name: Agile
   m_EditorClassIdentifier: 
-  presets: []
+  groundAcceleration: 50
+  maxGroundHorizontalSpeed: 0
+  groundFriction: 0.5
+  onAirJump: 4
+  jumpStregth: 15
+  maxJumpPressTime: 0.2
+  yVelocityLowGravityThreshold: 2
+  defaultGravity: 3
+  lowGravity: 1
+  fallingGravity: 6

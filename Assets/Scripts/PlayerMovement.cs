@@ -4,20 +4,20 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] float acceleration;
-    [SerializeField] float maxSpeed;
-    [SerializeField] float friction;
-    [SerializeField] float maxJump;
-    //bool hasAppliedContinuosJumpForce;
+    [SerializeField] PlayerStats stats;
 
-    [SerializeField] float gravedadPredeterminada;
-    [SerializeField] float gravityUp;
-    [SerializeField] float gravityFall;
+    [Header("Animations")]
+    [SerializeField] SquashAndStretch jumpingAnimation;
+    [SerializeField] SquashAndStretch squashAnimation;
+
+
+    [SerializeField] float maxSpeed;
+    float timeWhenPressSpace;
+    float remainingJumps;
 
 
     [SerializeField] LayerMask groundLayer;
     [SerializeField] Transform groundCheckPoint;
-
     [SerializeField] Collider2D boxCollider;
 
 
@@ -25,18 +25,17 @@ public class PlayerMovement : MonoBehaviour
     Animator animator;
     SpriteRenderer sp;
 
-    bool lookRight = true;
 
-    float remainingJumps;
+    //bool lookRight = true;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         //animator = GetComponent<Animator>();
-        sp = GetComponent<SpriteRenderer>();
+        sp = GetComponentInChildren<SpriteRenderer>();
 
-        remainingJumps = maxJump;
+        remainingJumps = stats.onAirJump;
 
     }
 
@@ -45,7 +44,7 @@ public class PlayerMovement : MonoBehaviour
     {
         MovementProcess();
         JumpProcess();
-
+        Gravity();
     }
 
     void MovementProcess()
@@ -65,14 +64,17 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftArrow))
             movement.x -= 1;
 
+        //Limitar la velocidad del player en horizontal
+        //rb.velocity = movement.normalized * stats.maxGroundHorizontalSpeed;
+
         //Aceleración del personaje
         if (movement != Vector2.zero)
         {
-            rb.velocity += movement * acceleration * UnityEngine.Time.deltaTime;
+            rb.velocity += movement * stats.groundAcceleration * Time.deltaTime;
         }
         else
         {
-            rb.velocity = new Vector2(rb.velocity.x / Mathf.Clamp(friction,1,5), rb.velocity.y);
+            rb.velocity = new Vector2(rb.velocity.x / Mathf.Clamp(stats.groundFriction,1,5), rb.velocity.y);
         }
 
         //Máxima velocidad del personaje
@@ -82,7 +84,6 @@ public class PlayerMovement : MonoBehaviour
         }
 
         //AnimacionVolteo(movement);
-
     }
 
     /*
@@ -123,8 +124,6 @@ public class PlayerMovement : MonoBehaviour
             );
 
         return raycastHit.collider != null;
-
-       
     }
 
 
@@ -140,12 +139,9 @@ public class PlayerMovement : MonoBehaviour
 
     void JumpProcess()
     {
-        float jumpStartedTime = 0;
-
-
         if (EstaEnSuelo())
         {
-            remainingJumps = maxJump;
+            remainingJumps = stats.onAirJump;
             //hasAppliedContinuosJumpForce = false;
         }
 
@@ -155,45 +151,41 @@ public class PlayerMovement : MonoBehaviour
             rb.velocity = new Vector2(rb.velocity.x, initialJumpForce);
             //rb.AddForce(Vector2.up * jumpStrenght, ForceMode2D.Impulse);
 
-            //Cuando pulso me cuenta tiempo
-            jumpStartedTime = Time.time;
-
             remainingJumps--;
-
-            //hasAppliedContinuosJumpForce = false;
+            
+            timeWhenPressSpace = 0.0f;
         }
 
         if (Input.GetKey(KeyCode.Space) && remainingJumps > 0)
         {
-            //float maxJumpPressTime = 0.2f;
-            float jumpForce = 1;
-
-            /*
-            if (rb.velocity.y > 0)
-            {
-                rb.gravityScale = gravityUp;
-                print("ha subido la gravedad: " + rb.gravityScale);
-            }
-            else
-            {
-                rb.gravityScale = gravityFall;
-                print("ha bajado la gravedad: " + rb.gravityScale);
-
-            }
-            */
-
-            //rb.velocity.y(Vector2.up * JumpForce);
+            timeWhenPressSpace += Time.deltaTime;
 
             //Limitar salto cuando presiona el espacio
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            if (stats.maxJumpPressTime >= timeWhenPressSpace)
+            {
+                //Le doy una fuerza al salto
+                rb.velocity = new Vector2(rb.velocity.x, stats.jumpStregth);
+            }
 
-            print("Jump Force: " + jumpForce);
+        }
+    }
 
+    void Gravity()
+    {
+        if (rb.velocity.y > stats.yVelocityLowGravityThreshold)
+        {
+            rb.gravityScale = stats.defaultGravity;
+            sp.color = Color.blue;
+        }
+        else if (rb.velocity.y < stats.yVelocityLowGravityThreshold && rb.velocity.y > -stats.yVelocityLowGravityThreshold)
+        {
+            rb.gravityScale = stats.lowGravity;
+            sp.color = Color.yellow;
         }
         else
         {
-            //Restaurar la gravedad normal cuando no salta
-            rb.gravityScale = gravedadPredeterminada;
+            rb.gravityScale = stats.fallingGravity;
+            sp.color = Color.green;
         }
     }
 }

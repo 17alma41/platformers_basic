@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class Squash : MonoBehaviour
+public class SquashAndStretch : MonoBehaviour
 {
     [Header("Squash and Stretch Core")]
     [SerializeField, Tooltip("Defaults to current GO if not set.")] private Transform transformToAffect;
@@ -72,6 +72,8 @@ public class Squash : MonoBehaviour
    [PropertySpace(25), Button]
    [ContextMenu(itemName:"Play Squash and Stretch")]
     */
+
+    //hay que poner el playSquashAndStretch en el player
     public void PlaySquashAndStretch()
     {
         if (looping && !canBeOverwritten)
