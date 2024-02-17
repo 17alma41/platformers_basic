@@ -25,6 +25,9 @@ public class PlayerMovement : MonoBehaviour
     Animator animator;
     SpriteRenderer sp;
 
+    [Header("Color Particle")]
+    [SerializeField] GameObject particleColor;
+
 
     //bool lookRight = true;
 
@@ -176,16 +179,22 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.gravityScale = stats.defaultGravity;
             sp.color = Color.blue;
+            particleColor.GetComponentInChildren<ParticleSystem>().startColor = Color.blue;
+
         }
         else if (rb.velocity.y < stats.yVelocityLowGravityThreshold && rb.velocity.y > -stats.yVelocityLowGravityThreshold)
         {
             rb.gravityScale = stats.lowGravity;
             sp.color = Color.yellow;
+            particleColor.GetComponentInChildren<ParticleSystem>().startColor = Color.yellow;
+
         }
         else
         {
             rb.gravityScale = stats.fallingGravity;
             sp.color = Color.green;
+            particleColor.GetComponentInChildren<ParticleSystem>().startColor = Color.green;
+
         }
     }
 }

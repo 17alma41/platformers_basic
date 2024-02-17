@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   groundAcceleration: 50
   maxGroundHorizontalSpeed: 0
-  groundFriction: 0.5
+  groundFriction: 0.9
   onAirJump: 4
   jumpStregth: 15
   maxJumpPressTime: 0.2
