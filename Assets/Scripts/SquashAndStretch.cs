@@ -15,6 +15,8 @@ public class SquashAndStretch : MonoBehaviour
     [SerializeField] bool playsEveryTime = true;
     [SerializeField, Range(0, 100f)] private float chanceToPlay = 100f;
 
+    [SerializeField] bool a = false;
+
 
 
     [Flags]
@@ -125,6 +127,8 @@ public class SquashAndStretch : MonoBehaviour
             while (elapsedTime < animationDuration)
             {
                 elapsedTime += Time.deltaTime;
+                if (a)
+                    print(elapsedTime / animationDuration);
 
                 float curvePosition;
 

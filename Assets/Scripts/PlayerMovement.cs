@@ -10,7 +10,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] SquashAndStretch jumpingAnimation;
     [SerializeField] SquashAndStretch squashAnimation;
 
-
+    [Header("Ahora le pongo nombre")]
     [SerializeField] float maxSpeed;
     float timeWhenPressSpace;
     float remainingJumps;
@@ -45,6 +45,8 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.J))
+            jumpingAnimation.PlaySquashAndStretch();
         MovementProcess();
         JumpProcess();
         Gravity();
@@ -85,6 +87,12 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.velocity = new Vector2(Mathf.Sign(rb.velocity.x) * maxSpeed, rb.velocity.y);
         }
+
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            squashAnimation.PlaySquashAndStretch();
+        }
+
 
         //AnimacionVolteo(movement);
     }
@@ -150,6 +158,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space) && remainingJumps > 0)
         {
+            jumpingAnimation.PlaySquashAndStretch();
             float initialJumpForce = 3;
             rb.velocity = new Vector2(rb.velocity.x, initialJumpForce);
             //rb.AddForce(Vector2.up * jumpStrenght, ForceMode2D.Impulse);
@@ -157,11 +166,13 @@ public class PlayerMovement : MonoBehaviour
             remainingJumps--;
             
             timeWhenPressSpace = 0.0f;
+
         }
 
         if (Input.GetKey(KeyCode.Space) && remainingJumps > 0)
         {
             timeWhenPressSpace += Time.deltaTime;
+            jumpingAnimation.PlaySquashAndStretch();
 
             //Limitar salto cuando presiona el espacio
             if (stats.maxJumpPressTime >= timeWhenPressSpace)
