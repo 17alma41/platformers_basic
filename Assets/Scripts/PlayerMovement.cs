@@ -10,15 +10,14 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] SquashAndStretch jumpingAnimation;
     [SerializeField] SquashAndStretch squashAnimation;
 
-    [Header("Ahora le pongo nombre")]
+    [Header("Ground")]
     [SerializeField] float maxSpeed;
     float timeWhenPressSpace;
     float remainingJumps;
-
+    bool playerOnGround;
 
     [SerializeField] LayerMask groundLayer;
     [SerializeField] Transform groundCheckPoint;
-    [SerializeField] Collider2D boxCollider;
 
 
     Rigidbody2D rb;
@@ -26,8 +25,8 @@ public class PlayerMovement : MonoBehaviour
     SpriteRenderer sp;
 
     [Header("Color Particle")]
-    [SerializeField] GameObject particleColor;
-
+    [SerializeField] ParticleSystem particleColor;
+    [SerializeField] ParticleSystem particleJump;
 
     //bool lookRight = true;
 
@@ -39,7 +38,6 @@ public class PlayerMovement : MonoBehaviour
         sp = GetComponentInChildren<SpriteRenderer>();
 
         remainingJumps = stats.onAirJump;
-
     }
 
     // Update is called once per frame
@@ -50,6 +48,7 @@ public class PlayerMovement : MonoBehaviour
         MovementProcess();
         JumpProcess();
         Gravity();
+        ChangeParticleOnGround();
     }
 
     void MovementProcess()
@@ -109,7 +108,6 @@ public class PlayerMovement : MonoBehaviour
 
     }
     */
-
     bool EstaEnSuelo()
     {
         /*
@@ -134,9 +132,11 @@ public class PlayerMovement : MonoBehaviour
             groundLayer
             );
 
+
+        //almacenar la funcion esta en suelo
+        
         return raycastHit.collider != null;
     }
-
 
     private void OnDrawGizmos()
     {
@@ -147,17 +147,27 @@ public class PlayerMovement : MonoBehaviour
             );
     }
     
+    void ChangeParticleOnGround()
+    {
+        playerOnGround = EstaEnSuelo();
+
+        if (playerOnGround)
+        {
+            particleColor.startColor = Color.magenta;
+        }
+    }
+
 
     void JumpProcess()
     {
         if (EstaEnSuelo())
         {
             remainingJumps = stats.onAirJump;
-            //hasAppliedContinuosJumpForce = false;
         }
 
         if (Input.GetKeyDown(KeyCode.Space) && remainingJumps > 0)
         {
+            particleJump.Play();
             jumpingAnimation.PlaySquashAndStretch();
             float initialJumpForce = 3;
             rb.velocity = new Vector2(rb.velocity.x, initialJumpForce);
@@ -166,7 +176,11 @@ public class PlayerMovement : MonoBehaviour
             remainingJumps--;
             
             timeWhenPressSpace = 0.0f;
+        }
 
+        if (Input.GetKeyUp(KeyCode.Space)) 
+        {
+            particleJump.Stop();
         }
 
         if (Input.GetKey(KeyCode.Space) && remainingJumps > 0)
@@ -177,11 +191,16 @@ public class PlayerMovement : MonoBehaviour
             //Limitar salto cuando presiona el espacio
             if (stats.maxJumpPressTime >= timeWhenPressSpace)
             {
+
                 //Le doy una fuerza al salto
                 rb.velocity = new Vector2(rb.velocity.x, stats.jumpStregth);
             }
-
+            else
+            {
+                particleJump.Stop();
+            }
         }
+
     }
 
     void Gravity()
@@ -189,22 +208,17 @@ public class PlayerMovement : MonoBehaviour
         if (rb.velocity.y > stats.yVelocityLowGravityThreshold)
         {
             rb.gravityScale = stats.defaultGravity;
-            sp.color = Color.blue;
-            particleColor.GetComponentInChildren<ParticleSystem>().startColor = Color.blue;
-
         }
         else if (rb.velocity.y < stats.yVelocityLowGravityThreshold && rb.velocity.y > -stats.yVelocityLowGravityThreshold)
         {
             rb.gravityScale = stats.lowGravity;
-            sp.color = Color.yellow;
-            particleColor.GetComponentInChildren<ParticleSystem>().startColor = Color.yellow;
+            particleColor.startColor = Color.yellow;
 
         }
         else
         {
             rb.gravityScale = stats.fallingGravity;
-            sp.color = Color.green;
-            particleColor.GetComponentInChildren<ParticleSystem>().startColor = Color.green;
+            particleColor.startColor = Color.green;
 
         }
     }
