@@ -27,6 +27,12 @@ public class PlayerMovement : MonoBehaviour
     [Header("Color Particle")]
     [SerializeField] ParticleSystem particleColor;
     [SerializeField] ParticleSystem particleJump;
+    [SerializeField] ParticleSystem particleFall;
+    [SerializeField] ParticleSystem particleSqueak;
+
+    [Header("Visuals")]
+    [SerializeField] Gradient groundColor;
+    [SerializeField] Gradient airColor;
 
     //bool lookRight = true;
 
@@ -43,12 +49,11 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.J))
-            jumpingAnimation.PlaySquashAndStretch();
         MovementProcess();
         JumpProcess();
         Gravity();
         ChangeParticleOnGround();
+
     }
 
     void MovementProcess()
@@ -90,6 +95,7 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Q))
         {
             squashAnimation.PlaySquashAndStretch();
+            particleSqueak.Play();
         }
 
 
@@ -110,6 +116,7 @@ public class PlayerMovement : MonoBehaviour
     */
     bool EstaEnSuelo()
     {
+
         /*
         RaycastHit2D raycastHit = Physics2D.BoxCast(
             boxCollider.bounds.center, 
@@ -153,7 +160,11 @@ public class PlayerMovement : MonoBehaviour
 
         if (playerOnGround)
         {
-            particleColor.startColor = Color.magenta;
+            particleColor.startColor = Color.white;
+        }
+        else
+        {
+            sp.color = airColor.Evaluate(1f);
         }
     }
 
@@ -163,6 +174,7 @@ public class PlayerMovement : MonoBehaviour
         if (EstaEnSuelo())
         {
             remainingJumps = stats.onAirJump;
+            sp.color = groundColor.Evaluate(1f);
         }
 
         if (Input.GetKeyDown(KeyCode.Space) && remainingJumps > 0)
@@ -218,7 +230,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             rb.gravityScale = stats.fallingGravity;
-            particleColor.startColor = Color.green;
+            particleColor.startColor = Color.magenta;
 
         }
     }
