@@ -9,12 +9,13 @@ public class PlayerMovement : MonoBehaviour
     [Header("Animations")]
     [SerializeField] SquashAndStretch jumpingAnimation;
     [SerializeField] SquashAndStretch squashAnimation;
+    [SerializeField] SquashAndStretch fallAnimation;
 
     [Header("Ground")]
-    [SerializeField] float maxSpeed;
     float timeWhenPressSpace;
-    float remainingJumps;
+    int remainingJumps;
     bool playerOnGround;
+    bool wasOnGround = false;
 
     [SerializeField] LayerMask groundLayer;
     [SerializeField] Transform groundCheckPoint;
@@ -49,10 +50,13 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        wasOnGround = playerOnGround;
+        playerOnGround = EstaEnSuelo();
+
         MovementProcess();
         JumpProcess();
         Gravity();
-        ChangeParticleOnGround();
+        HandleGroundedEffects();
 
     }
 
@@ -77,20 +81,40 @@ public class PlayerMovement : MonoBehaviour
         //rb.velocity = movement.normalized * stats.maxGroundHorizontalSpeed;
 
         //Aceleración del personaje
+        //Poner los dos si esta en el suelo o si no esta en el suelo
         if (movement != Vector2.zero)
         {
             rb.velocity += movement * stats.groundAcceleration * Time.deltaTime;
         }
         else
         {
-            rb.velocity = new Vector2(rb.velocity.x / Mathf.Clamp(stats.groundFriction,1,5), rb.velocity.y);
+            //Fricción en el suelo
+            rb.velocity = new Vector2(rb.velocity.x / Mathf.Clamp(stats.groundFriction,1,Mathf.Infinity), rb.velocity.y);
         }
 
-        //Máxima velocidad del personaje
-        if (Mathf.Abs(rb.velocity.x) > maxSpeed)
+        //Máxima velocidad del personaje horizontal en el suelo
+        if (Mathf.Abs(rb.velocity.x) > stats.maxGroundHorizontalSpeed)
         {
-            rb.velocity = new Vector2(Mathf.Sign(rb.velocity.x) * maxSpeed, rb.velocity.y);
+            rb.velocity = new Vector2(Mathf.Sign(rb.velocity.x) * stats.maxGroundHorizontalSpeed, rb.velocity.y);
         }
+
+
+        if (!playerOnGround && wasOnGround)
+        {
+            rb.velocity += movement * stats.airAcceleration * Time.deltaTime;
+        }
+        else
+        {
+            //Fricción en el aire
+            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y / Mathf.Clamp(stats.airFriction, 1, Mathf.Infinity));
+        }
+
+        //Máxima velocidad del personaje horizontal en el aire
+        if (Mathf.Abs(rb.velocity.y) > stats.maxAirHorizontalSpeed)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Sign(rb.velocity.y) * stats.maxAirHorizontalSpeed);
+        }
+
 
         if (Input.GetKeyDown(KeyCode.Q))
         {
@@ -140,8 +164,6 @@ public class PlayerMovement : MonoBehaviour
             );
 
 
-        //almacenar la funcion esta en suelo
-        
         return raycastHit.collider != null;
     }
 
@@ -154,17 +176,23 @@ public class PlayerMovement : MonoBehaviour
             );
     }
     
-    void ChangeParticleOnGround()
+    void HandleGroundedEffects()
     {
-        playerOnGround = EstaEnSuelo();
-
-        if (playerOnGround)
+        if (playerOnGround && !wasOnGround)
+        {
+            sp.color = groundColor.Evaluate(1f);
+            particleColor.startColor = Color.white;
+            fallAnimation.PlaySquashAndStretch();
+            particleFall.Play();
+        }
+        else if (playerOnGround && wasOnGround)
         {
             particleColor.startColor = Color.white;
         }
         else
         {
-            sp.color = airColor.Evaluate(1f);
+            float jumpRatio = 1f * remainingJumps / stats.onAirJump;
+            sp.color = airColor.Evaluate(jumpRatio);
         }
     }
 
@@ -174,7 +202,6 @@ public class PlayerMovement : MonoBehaviour
         if (EstaEnSuelo())
         {
             remainingJumps = stats.onAirJump;
-            sp.color = groundColor.Evaluate(1f);
         }
 
         if (Input.GetKeyDown(KeyCode.Space) && remainingJumps > 0)
@@ -186,7 +213,7 @@ public class PlayerMovement : MonoBehaviour
             //rb.AddForce(Vector2.up * jumpStrenght, ForceMode2D.Impulse);
 
             remainingJumps--;
-            
+
             timeWhenPressSpace = 0.0f;
         }
 
@@ -212,7 +239,6 @@ public class PlayerMovement : MonoBehaviour
                 particleJump.Stop();
             }
         }
-
     }
 
     void Gravity()
@@ -220,18 +246,18 @@ public class PlayerMovement : MonoBehaviour
         if (rb.velocity.y > stats.yVelocityLowGravityThreshold)
         {
             rb.gravityScale = stats.defaultGravity;
+            particleColor.startColor = Color.white;
+
         }
         else if (rb.velocity.y < stats.yVelocityLowGravityThreshold && rb.velocity.y > -stats.yVelocityLowGravityThreshold)
         {
             rb.gravityScale = stats.lowGravity;
             particleColor.startColor = Color.yellow;
-
         }
         else
         {
             rb.gravityScale = stats.fallingGravity;
-            particleColor.startColor = Color.magenta;
-
+            particleColor.startColor = Color.green;
         }
     }
 }

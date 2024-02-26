@@ -127,8 +127,8 @@ public class SquashAndStretch : MonoBehaviour
             while (elapsedTime < animationDuration)
             {
                 elapsedTime += Time.deltaTime;
-                if (a)
-                    print(elapsedTime / animationDuration);
+                //if (a)
+                //    print(elapsedTime / animationDuration);
 
                 float curvePosition;
 
@@ -174,6 +174,8 @@ public class SquashAndStretch : MonoBehaviour
             }
 
         } while (looping);
+
+        print("coroutine ends");
     }
 
     public void SetLooping(bool shouldLoop)
