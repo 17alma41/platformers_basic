@@ -30,6 +30,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] ParticleSystem particleJump;
     [SerializeField] ParticleSystem particleFall;
     [SerializeField] ParticleSystem particleSqueak;
+    [SerializeField] ParticleSystem particleBlood;
 
     [Header("Visuals")]
     [SerializeField] Gradient groundColor;
@@ -125,7 +126,7 @@ public class PlayerMovement : MonoBehaviour
         //Limitar la velocidad de caída
         if (rb.velocity.y < -5)
         {
-            rb.velocity = new Vector2(rb.velocity.x, -stats.maxAirSpeed);
+            rb.velocity = new Vector2(rb.velocity.x, -stats.maxFallSpeed);
         }
     }
 
@@ -205,11 +206,18 @@ public class PlayerMovement : MonoBehaviour
             remainingJumps--;
 
             timeWhenPressSpace = 0.0f;
+
+            if (remainingJumps == 0)
+            {
+                particleBlood.Play();
+                particleJump.Stop();
+            }
         }
 
         if (Input.GetKeyUp(KeyCode.Space)) 
         {
             particleJump.Stop();
+            particleBlood.Stop();
         }
 
         if (Input.GetKey(KeyCode.Space) && remainingJumps > 0)

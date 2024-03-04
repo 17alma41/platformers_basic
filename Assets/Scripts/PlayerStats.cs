@@ -20,7 +20,7 @@ public class PlayerStats : ScriptableObject
     public float airAcceleration = 0;
     public float maxAirHorizontalSpeed = 0;
     public float airFriction = 0;
-    public float maxAirSpeed = 0;
+    public float maxFallSpeed = 0;
     public float yVelocityLowGravityThreshold = 2;
     public float defaultGravity = 3;
     public float lowGravity = 1;

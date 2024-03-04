@@ -30,6 +30,5 @@ public class PresetChanger : MonoBehaviour
     void ChangePresetStats()
     {
         player.stats = presets[currentProfileIndex];
-        print(presets[currentProfileIndex].name);
     }
 }

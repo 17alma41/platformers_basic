@@ -10,17 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b02e8c32547d474498d14d807488623, type: 3}
-  m_Name: Algo
+  m_Name: Saltarin
   m_EditorClassIdentifier: 
-  groundAcceleration: 100
-  maxGroundHorizontalSpeed: 100
-  groundFriction: 0.9
-  onAirJump: 8
-  jumpStregth: 15
-  maxJumpPressTime: 0.5
+  groundAcceleration: 5
+  maxGroundHorizontalSpeed: 5
+  groundFriction: 1
+  onAirJump: 1
+  jumpStregth: 30
+  maxJumpPressTime: 0.1
   airAcceleration: 5
   maxAirHorizontalSpeed: 5
   airFriction: 0.003
+  maxFallSpeed: 8
   yVelocityLowGravityThreshold: 2
   defaultGravity: 3
   lowGravity: 1

@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: Agile
   m_EditorClassIdentifier: 
   groundAcceleration: 50
-  maxGroundHorizontalSpeed: 10
+  maxGroundHorizontalSpeed: 15
   groundFriction: 0.9
   onAirJump: 4
   jumpStregth: 15
   maxJumpPressTime: 0.2
-  airAcceleration: 20
+  airAcceleration: 50
   maxAirHorizontalSpeed: 15
   airFriction: 0.003
-  maxAirSpeed: 20
+  maxFallSpeed: 18
   yVelocityLowGravityThreshold: 2
   defaultGravity: 3
   lowGravity: 1

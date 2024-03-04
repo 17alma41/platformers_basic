@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     [SerializeField] Transform Player;
+    [SerializeField] Rigidbody2D rbPlayer;
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +22,7 @@ public class GameManager : MonoBehaviour
 
     void GameReset()
     {
-        Player.position = new Vector2(0, 0);
+        Player.position = new Vector2(0, 1.25f);
+        rbPlayer.velocity = new Vector2(0, 0);
     }
 }

@@ -15,9 +15,6 @@ public class SquashAndStretch : MonoBehaviour
     [SerializeField] bool playsEveryTime = true;
     [SerializeField, Range(0, 100f)] private float chanceToPlay = 100f;
 
-    [SerializeField] bool a = false;
-
-
 
     [Flags]
     public enum SquashStretchAxis
