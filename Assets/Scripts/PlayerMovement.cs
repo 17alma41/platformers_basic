@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] PlayerStats stats;
+    public PlayerStats stats;
 
     [Header("Animations")]
     [SerializeField] SquashAndStretch jumpingAnimation;
@@ -77,42 +77,42 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftArrow))
             movement.x -= 1;
 
-        //Limitar la velocidad del player en horizontal
-        //rb.velocity = movement.normalized * stats.maxGroundHorizontalSpeed;
+        //Aceleración y fricción del personaje
+        if (playerOnGround)
+        {
+            if (movement != Vector2.zero)
+            {
+                rb.velocity += movement * stats.groundAcceleration * Time.deltaTime;
+            }
+            else
+            {
+                //Fricción en el suelo
+                rb.velocity = new Vector2(rb.velocity.x / Mathf.Clamp(stats.groundFriction, 1, Mathf.Infinity), rb.velocity.y);
+            }
 
-        //Aceleración del personaje
-        //Poner los dos si esta en el suelo o si no esta en el suelo
-        if (movement != Vector2.zero)
-        {
-            rb.velocity += movement * stats.groundAcceleration * Time.deltaTime;
+            //Máxima velocidad del personaje horizontal en el suelo
+            if (Mathf.Abs(rb.velocity.x) > stats.maxGroundHorizontalSpeed)
+            {
+                rb.velocity = new Vector2(Mathf.Sign(rb.velocity.x) * stats.maxGroundHorizontalSpeed, rb.velocity.y);
+            }
         }
-        else
+        else if (!playerOnGround)
         {
-            //Fricción en el suelo
-            rb.velocity = new Vector2(rb.velocity.x / Mathf.Clamp(stats.groundFriction,1,Mathf.Infinity), rb.velocity.y);
-        }
+            if (movement != Vector2.zero)
+            {
+                rb.velocity += movement * stats.airAcceleration * Time.deltaTime;
+            }
+            else
+            {
+                //Fricción en el aire
+                rb.velocity = new Vector2(rb.velocity.x / Mathf.Clamp(stats.airFriction, 1, Mathf.Infinity), rb.velocity.y);
+            }
 
-        //Máxima velocidad del personaje horizontal en el suelo
-        if (Mathf.Abs(rb.velocity.x) > stats.maxGroundHorizontalSpeed)
-        {
-            rb.velocity = new Vector2(Mathf.Sign(rb.velocity.x) * stats.maxGroundHorizontalSpeed, rb.velocity.y);
-        }
-
-
-        if (!playerOnGround && wasOnGround)
-        {
-            rb.velocity += movement * stats.airAcceleration * Time.deltaTime;
-        }
-        else
-        {
-            //Fricción en el aire
-            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y / Mathf.Clamp(stats.airFriction, 1, Mathf.Infinity));
-        }
-
-        //Máxima velocidad del personaje horizontal en el aire
-        if (Mathf.Abs(rb.velocity.y) > stats.maxAirHorizontalSpeed)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Sign(rb.velocity.y) * stats.maxAirHorizontalSpeed);
+            //Máxima velocidad del personaje horizontal en el aire
+            if (Mathf.Abs(rb.velocity.x) > stats.maxAirHorizontalSpeed)
+            {
+                rb.velocity = new Vector2(Mathf.Sign(rb.velocity.x) * stats.maxAirHorizontalSpeed, rb.velocity.y);
+            }
         }
 
 
@@ -122,25 +122,15 @@ public class PlayerMovement : MonoBehaviour
             particleSqueak.Play();
         }
 
-
-        //AnimacionVolteo(movement);
-    }
-
-    /*
-    void AnimacionVolteo(Vector2 movement)
-    {
-        if ((lookRight == true && movement.x < 0) || (lookRight == false && movement.x > 0))
+        //Limitar la velocidad de caída
+        if (rb.velocity.y < -5)
         {
-            lookRight = !lookRight;
-            //transform.localScale = new Vector2(-transform.localScale.x, transform.localScale.y);
-            sp.flipX = lookRight;
+            rb.velocity = new Vector2(rb.velocity.x, -stats.maxAirSpeed);
         }
-
     }
-    */
+
     bool EstaEnSuelo()
     {
-
         /*
         RaycastHit2D raycastHit = Physics2D.BoxCast(
             boxCollider.bounds.center, 
